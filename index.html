@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#0a0713" />
+<title>SLAM CIRCUIT — Pro Wrestling Card Battle</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0713'/><rect x='4' y='12' width='24' height='9' fill='%23ffc857'/><rect x='13' y='9' width='6' height='15' fill='%23ffc857'/></svg>" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+  <div id="stage-wrap">
+    <canvas id="stage" width="640" height="360" aria-label="Wrestling arena"></canvas>
+    <div class="stage-scan"></div>
+    <div class="stage-vignette"></div>
+  </div>
+
+  <!-- FLOATING COMBAT TEXT -->
+  <div id="floaters" aria-hidden="true"></div>
+
+  <!-- BATTLE HUD -->
+  <header id="hud" class="hidden">
+    <div class="fighter-panel player" id="panel-player">
+      <canvas class="portrait" id="portrait-player" width="64" height="64"></canvas>
+      <div class="fighter-info">
+        <div class="fighter-top">
+          <span class="fighter-name" id="player-name">REX MADDOX</span>
+          <span class="fighter-tag" id="player-tag">POWERHOUSE</span>
+        </div>
+        <div class="bar hp-bar"><span class="bar-fill" id="player-hp-fill"></span><span class="bar-label" id="player-hp-label">84/84</span></div>
+        <div class="bar heat-bar"><span class="bar-fill" id="player-heat-fill"></span><span class="bar-label">HEAT <b id="player-heat-label">0</b></span></div>
+        <div class="badge-row" id="player-badges"></div>
+      </div>
+    </div>
+
+    <div class="match-center">
+      <div class="match-line"><span id="match-label">MATCH 1 / 3</span><span class="dot">◆</span><span id="match-stakes">QUALIFIER</span></div>
+      <div class="crowd-wrap" title="Crowd meter — fill it for a bonus momentum point">
+        <span class="crowd-icon">☻</span>
+        <div class="crowd-bar"><span id="crowd-fill"></span><i class="crowd-notch" style="left:50%"></i></div>
+        <span class="crowd-icon">☻</span>
+      </div>
+      <div class="hud-buttons">
+        <button class="icon-btn" id="btn-help" title="How to play (H)" aria-label="How to play">?</button>
+        <button class="icon-btn" id="btn-sound" title="Toggle sound" aria-label="Toggle sound">♪</button>
+        <button class="icon-btn" id="btn-pause" title="Pause (Esc)" aria-label="Pause">II</button>
+      </div>
+    </div>
+
+    <div class="fighter-panel enemy" id="panel-enemy">
+      <div class="fighter-info">
+        <div class="fighter-top">
+          <span class="fighter-tag" id="enemy-tag">THE WALL</span>
+          <span class="fighter-name" id="enemy-name">BRUTUS KANE</span>
+        </div>
+        <div class="bar hp-bar"><span class="bar-fill" id="enemy-hp-fill"></span><span class="bar-label" id="enemy-hp-label">65/65</span></div>
+        <div class="bar heat-bar rage-bar"><span class="bar-fill" id="enemy-rage-fill"></span><span class="bar-label">RAGE <b id="enemy-rage-label">0</b></span></div>
+        <div class="badge-row" id="enemy-badges"></div>
+      </div>
+      <canvas class="portrait" id="portrait-enemy" width="64" height="64"></canvas>
+    </div>
+  </header>
+
+  <!-- ENEMY INTENT -->
+  <div id="intent" class="hidden" aria-live="polite">
+    <div class="intent-label">INCOMING</div>
+    <div class="intent-body">
+      <canvas id="intent-icon" width="24" height="24"></canvas>
+      <div class="intent-text">
+        <div class="intent-name" id="intent-name">LARIAT</div>
+        <div class="intent-sub" id="intent-sub">9 DAMAGE</div>
+      </div>
+      <div class="intent-dmg" id="intent-dmg">9</div>
+    </div>
+  </div>
+
+  <!-- BATTLE BOTTOM DOCK -->
+  <footer id="dock" class="hidden">
+    <div class="dock-left">
+      <div class="mom-label">MOMENTUM</div>
+      <div class="pips" id="momentum-pips"></div>
+      <div class="deck-count"><span class="pile-icon">▤</span> DRAW <b id="draw-count">8</b></div>
+      <div class="deck-count"><span class="pile-icon dim">▥</span> DISCARD <b id="discard-count">0</b></div>
+    </div>
+    <div class="hand-wrap">
+      <div class="chain-readout" id="chain-readout">CHAIN <b>0</b></div>
+      <div id="hand" class="hand"></div>
+    </div>
+    <div class="dock-right">
+      <button id="btn-endturn" class="pixel-btn end-btn">END TURN<span class="end-hint">SPACE</span></button>
+      <div class="turn-readout">TURN <b id="turn-count">1</b></div>
+    </div>
+  </footer>
+
+  <div id="commentary" class="hidden"><span class="commentary-tag">COMMENTARY</span><span id="commentary-text">The bell has rung!</span></div>
+
+  <!-- TITLE -->
+  <section id="screen-title" class="overlay screen">
+    <div class="title-inner">
+      <div class="kicker">★ THE WORLD'S PREMIER CARD LEAGUE ★</div>
+      <h1 class="logo"><span class="logo-slam">SLAM</span><span class="logo-circuit">CIRCUIT</span></h1>
+      <div class="logo-strip">PRO WRESTLING CARD BATTLE</div>
+      <div class="title-belt">
+        <span class="belt-wing">◆</span>
+        <div class="belt-plate"><span class="belt-star">★</span><span class="belt-word">SLAM</span></div>
+        <span class="belt-wing">◆</span>
+      </div>
+      <p class="title-blurb">Three matches. One championship.<br/>Build your heat, break their guard, hit your finisher.</p>
+      <button id="btn-start" class="pixel-btn big gold">PRESS START</button>
+      <button id="btn-how" class="pixel-btn ghost">HOW TO PLAY</button>
+      <div class="title-foot">A 64-BIT PIXEL WRESTLING CARD BATTLE · SOUND ON RECOMMENDED</div>
+    </div>
+  </section>
+
+  <!-- SELECT -->
+  <section id="screen-select" class="overlay screen hidden">
+    <div class="select-inner">
+      <div class="screen-head">
+        <div class="screen-kicker">TONIGHT'S CARD</div>
+        <h2>CHOOSE YOUR FIGHTER</h2>
+        <p>Each wrestler brings a unique deck, passive ability and signature finisher.</p>
+      </div>
+      <div class="fighter-grid" id="fighter-grid"></div>
+      <div class="select-actions">
+        <button id="btn-back-title" class="pixel-btn ghost small">◀ BACK</button>
+        <div class="select-tip">CLICK A FIGHTER · THEN <b>ENTER THE RING</b></div>
+        <button id="btn-enter-ring" class="pixel-btn gold" disabled>ENTER THE RING ▶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MATCH SPLASH -->
+  <section id="screen-splash" class="overlay screen hidden splash-screen">
+    <div class="splash-inner">
+      <div class="splash-match" id="splash-match">MATCH 1 · QUALIFIER</div>
+      <div class="splash-names">
+        <div class="splash-side left"><span id="splash-player">REX MADDOX</span><small id="splash-player-tag">POWERHOUSE</small></div>
+        <div class="splash-vs">VS</div>
+        <div class="splash-side right"><span id="splash-enemy">BRUTUS KANE</span><small id="splash-enemy-tag">THE WALL</small></div>
+      </div>
+      <div class="splash-quote" id="splash-quote">"You're stepping into MY ring, kid."</div>
+    </div>
+  </section>
+
+  <!-- REWARD -->
+  <section id="screen-reward" class="overlay screen hidden">
+    <div class="reward-inner">
+      <div class="screen-kicker" id="reward-kicker">MATCH WON</div>
+      <h2 class="reward-title">SIGN A NEW MOVE</h2>
+      <p class="reward-sub" id="reward-sub">Add one card to your deck. Your stamina was restored by 35%.</p>
+      <div class="reward-grid" id="reward-grid"></div>
+      <button id="btn-skip-reward" class="pixel-btn ghost small">SKIP — TAKE THE GATE</button>
+    </div>
+  </section>
+
+  <!-- RESULT -->
+  <section id="screen-result" class="overlay screen hidden">
+    <div class="result-inner">
+      <div class="result-belt" id="result-belt">★</div>
+      <h2 id="result-title">CHAMPION!</h2>
+      <div class="result-sub" id="result-sub">You run the circuit.</div>
+      <div class="result-stats" id="result-stats"></div>
+      <div class="result-actions">
+        <button id="btn-restart" class="pixel-btn gold">NEW RUN</button>
+        <button id="btn-retry" class="pixel-btn red hidden">REMATCH</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- HELP / PAUSE -->
+  <section id="screen-help" class="overlay screen hidden">
+    <div class="modal-inner help-inner">
+      <button class="modal-close" id="btn-close-help" aria-label="Close">✕</button>
+      <div class="screen-kicker">THE RULEBOOK</div>
+      <h2>HOW TO FIGHT</h2>
+      <div class="help-grid">
+        <div class="help-block"><h3>1 · WIN THE MATCH</h3><p>Knock your opponent's stamina to <b>0</b> before they do the same to you. Win three matches to take the belt.</p></div>
+        <div class="help-block"><h3>2 · SPEND MOMENTUM</h3><p>You start each turn with <b>3 momentum</b>. Cards cost 0–3. Unspent momentum is lost, so empty your tank.</p></div>
+        <div class="help-block"><h3>3 · BUILD HEAT</h3><p>Taunts and big moves raise your <b>Heat</b>. At 55–60 heat your <b>finisher</b> unlocks — it spends the heat.</p></div>
+        <div class="help-block"><h3>4 · CHAIN CARDS</h3><p>Every card played after the first in a turn adds <b>+1 damage</b> to that card (up to +3). End with your biggest move.</p></div>
+        <div class="help-block"><h3>5 · READ THE INTENT</h3><p>The <b>INCOMING</b> panel shows exactly what your opponent will do next. Bank <b>guard</b> or play a <b>counter</b>.</p></div>
+        <div class="help-block"><h3>6 · WORK THE CROWD</h3><p>Dealing damage fills the <b>crowd meter</b>. Fill it completely for <b>+1 momentum</b> next turn.</p></div>
+      </div>
+      <div class="help-keys"><span><b>1–9</b> play card</span><span><b>SPACE</b> end turn</span><span><b>H</b> rules</span><span><b>ESC</b> pause</span></div>
+      <button class="pixel-btn gold" id="btn-help-back">BACK TO THE ACTION</button>
+    </div>
+  </section>
+
+  <div id="toast" class="hidden"></div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
