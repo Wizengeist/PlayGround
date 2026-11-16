@@ -21,7 +21,7 @@
 
 A complete, original, whimsical survival game. Open `index.html` in a browser (or serve this folder with `python3 -m http.server 3002`) and play.
 
-- Move with **WASD** or the **arrow keys**; on phones, use the on-screen joystick.
+- Move with **WASD**, the **arrow keys**, or the on-screen joystick (mouse or touch).
 - Your poppywand automatically targets nearby grumble-goblins. Tap **✦** on touchscreens for an extra cast.
 - Collect glimmers to level up and pick upgrades. Press **Space** or the pause button to pause.
 
