@@ -16,3 +16,14 @@
 - 👤 [Explore the creator's projects](https://go.ondev.store/Wizengeist).
 - 🌍 [Create with OMGithub](https://go.ondev.store/).
 <!-- omgithub:readme:end -->
+
+## Oddlings of the Wobblewood
+
+A complete, original, whimsical survival game. Open `index.html` in a browser (or serve this folder with `python3 -m http.server 3002`) and play.
+
+- Move with **WASD** or the **arrow keys**; on phones, use the on-screen joystick.
+- Your poppywand automatically targets nearby grumble-goblins. Tap **✦** on touchscreens for an extra cast.
+- Collect glimmers to level up and pick upgrades. Press **Space** or the pause button to pause.
+
+Last three minutes to win—or see how long you can last!
+
